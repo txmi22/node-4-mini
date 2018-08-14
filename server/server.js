@@ -18,6 +18,7 @@ app.use(
 );
 
 app.get('/api/messages', messagesCtrl.getAllMessages);
+app.get('/api/messages/history', messagesCtrl.history);
 app.post('/api/messages', messagesCtrl.createMessage);
 
 app.listen(SERVER_PORT, () => {

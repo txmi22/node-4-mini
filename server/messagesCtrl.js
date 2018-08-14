@@ -19,5 +19,8 @@ module.exports = {
     }
 
     res.status(200).send(allMessages);
+  },
+  history: (req, res) => {
+    res.status(200).send(req.session.history);
   }
 };
