@@ -9,6 +9,12 @@ export default class HistoryModal extends Component {
     };
   }
 
+  
+  componentDidMount() {
+    // create request here
+  }
+  
+
   render() {
     let historyMessages = this.state.historyMessages.map((messageObj, i) => {
       return (

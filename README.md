@@ -19,7 +19,7 @@ In this step, we'll use `npm` to install, `express`, `body-parser`, and `dotenv`
 ### Instructions
 
 - Run `npm install --save express dotenv body-parser`.
-- Create a folder called `server`. Within the `server` folder, create the `server.js` file.
+- Create a folder called `server`. Within the `server` folder, create the `index.js` file.
 - Create a `.env` file. Add the property `SERVER_PORT` to your .env file and assign it the value of `3005`;
 - Set up your server file using `express`, `body-parser` middleware, and listening on a port.
   - Don't forget to configure `dotenv` to use with your session secret and include your `.env` file in your `.gitignore`.
@@ -71,7 +71,7 @@ In this step, we will set up needed endpoints and create a controller file.
 
 <details>
 
-<summary> <code> server.js </code> </summary>
+<summary> <code> index.js </code> </summary>
 
 ```js
 require('dotenv').config();
@@ -139,7 +139,7 @@ In this step, we will set up the proxy so that all non text/html requests are fo
 ```js
 ...
 
-  "main": "./server/server.js",
+  "main": "./server/index.js",
   "proxy": "http://localhost:3005"
 }
 ```
@@ -208,7 +208,7 @@ At this point, you should have a working app where you can save your username an
 - This library is middleware. We need to configure sessions using the built-in express method `app.use()`;
 - At the top of the file, require in the library
   - `const session = require('express-session');`
-  - In the `.env` file, add a property called `SESSION_SECRET` with an associated value. In the `server.js` file, destructure this value from the `process.env` object.
+  - In the `.env` file, add a property called `SESSION_SECRET` with an associated value. In the `index.js` file, destructure this value from the `process.env` object.
 - Configure this top level middleware like this:
   ```
   app.use(session({
@@ -225,7 +225,7 @@ At this point, you should have a working app where you can save your username an
 
 <details>
 
-<summary> <code> server.js </code> </summary>
+<summary> <code> index.js </code> </summary>
 
 ```js
 require('dotenv').config();
@@ -321,7 +321,7 @@ In this step, we will display the user's message history in history modal.
     - path: `'/api/messages/history'`
     - Update the `historyMessages` property with the response.
 - Since we don't have an endpoint for the above request, let's go create one.
-  - In the `server.js` file, add a GET endpoint with a path of `'/api/messages/history'`.
+  - In the `index.js` file, add a GET endpoint with a path of `'/api/messages/history'`.
   - Add a method named `history` to the messages controller.
     - `history` should return all the messages stored on the session.
 
@@ -354,7 +354,7 @@ export default class HistoryModal extends Component {
 </details>
 <details>
 
-<summary> <code> server.js </code> </summary>
+<summary> <code> index.js </code> </summary>
 
 ```js
 require('dotenv').config();
@@ -429,7 +429,7 @@ In this step, we will add in custom middleware. Sometimes you just cannot trust 
 
 ### Instructions
 
-- In `server.js`, add in some top level, custom middleware. If there is a `message` property on the body, write some filter logic to make sure that bad words are removed. Below is an example, but there are different ways to accomplish this.
+- In `index.js`, add in some top level, custom middleware. If there is a `message` property on the body, write some filter logic to make sure that bad words are removed. Below is an example, but there are different ways to accomplish this.
 
   - _Note_: the example below is using a regular expression. Regular expressions are patterns used to match character combinations in strings. The regular expression below is searching for our bad words using the 'g' flag, which searches the string gloabally for all instances of our bad words...then replaces them with '\*\*\*\*'.
 
@@ -437,7 +437,6 @@ In this step, we will add in custom middleware. Sometimes you just cannot trust 
 app.use((req, res, next) => {
   let badWords = ['knucklehead', 'jerk', 'internet explorer'];
   if (req.body.message) {
-    let badWordsExist = true;
     for (let i = 0; i < badWords.length; i++) {
       let regex = new RegExp(badWords[i], 'g');
       req.body.message = req.body.message.replace(regex, '****');
@@ -455,7 +454,7 @@ If you see a problem or a typo, please fork, make the necessary changes, and cre
 
 ## Copyright
 
-© DevMountain LLC, 2017. Unauthorized use and/or duplication of this material without express and written permission from DevMountain, LLC is strictly prohibited. Excerpts and links may be used, provided that full and clear credit is given to DevMountain with appropriate and specific direction to the original content.
+© DevMountain LLC, 2019. Unauthorized use and/or duplication of this material without express and written permission from DevMountain, LLC is strictly prohibited. Excerpts and links may be used, provided that full and clear credit is given to DevMountain with appropriate and specific direction to the original content.
 
 <p align="center">
 <img src="https://s3.amazonaws.com/devmountain/readme-logo.png" width="250">
