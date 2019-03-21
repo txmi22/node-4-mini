@@ -14,14 +14,14 @@ In this project, we will be creating a chat application that will use sessions a
 
 ### Summary
 
-In this step, we'll use `npm` to install, `express`, `body-parser`, and `dotenv` and set up our server file.
+In this step, we'll use `npm` to install `express` and `dotenv` and set up our server file.
 
 ### Instructions
 
-- Run `npm install --save express dotenv body-parser`.
+- Run `npm install express dotenv`.
 - Create a folder called `server`. Within the `server` folder, create the `index.js` file.
-- Create a `.env` file. Add the property `SERVER_PORT` to your .env file and assign it the value of `3005`;
-- Set up your server file using `express`, `body-parser` middleware, and listening on a port.
+- Create a `.env` file in the root folder of your project. Add the property `SERVER_PORT` to your `.env` file and assign it the value of `3005`
+- Set up your server file using `express`, `express.json` middleware, and listening on a port.
   - Don't forget to configure `dotenv` to use with your session secret and include your `.env` file in your `.gitignore`.
 
 ### Solution
@@ -31,15 +31,14 @@ In this step, we'll use `npm` to install, `express`, `body-parser`, and `dotenv`
 <summary> <code> server/index.js </code> </summary>
 
 ```js
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
+require("dotenv").config();
+const express = require("express");
 
 let { SERVER_PORT } = process.env;
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.listen(SERVER_PORT, () => {
   console.log(`Server listening on port ${SERVER_PORT}.`);
@@ -48,7 +47,47 @@ app.listen(SERVER_PORT, () => {
 
 </details>
 
+<details>
+
+<summary><code> .env </code></summary>
+
+```
+SERVER_PORT = 3005
+```
+
+</details>
+
 ## Step 2
+
+### Summary
+
+In this step, we will set up the `proxy` so that all non text/html requests are forwarded on to our node/express server. We'll also set up the `main` property so you can easily start your server with `nodemon`.
+
+### Instructions
+
+- Open your `package.json` file.
+- Add the following line.
+  - `"proxy": "http://localhost:3005"`
+- Add the following line.
+  - `"main": "server/index.js"`
+
+### Solution
+
+<details>
+
+<summary> <code> package.json </code> </summary>
+
+```js
+...
+
+  "main": "./server/index.js",
+  "proxy": "http://localhost:3005"
+}
+```
+
+</details>
+
+## Step 3
 
 ### Summary
 
@@ -65,7 +104,7 @@ In this step, we will set up needed endpoints and create a controller file.
 - Add another method to the controller file called `createMessage`.
   - A username and message will be sent in the body of the request. Create a new message object with the `username` and `message` properties. Push the new message object into the `allMessages` array.
   - Respond with the updated `allMessages` array.
-- Create a POST endpoint with a path of `/api/messages` and use the `createMessage` method as the callback.
+- Create a POST endpoint with a path of `/api/message` and use the `createMessage` method as the callback.
 
 ### Solution
 
@@ -74,23 +113,23 @@ In this step, we will set up needed endpoints and create a controller file.
 <summary> <code> index.js </code> </summary>
 
 ```js
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const messagesCtrl = require('./messagesCtrl');
+require("dotenv").config();
+const express = require("express");
+const messagesCtrl = require("./messagesCtrl");
+const session = require("express-session");
 
-let { SERVER_PORT } = process.env;
+let { SERVER_PORT, SESSION_SECRET } = process.env;
 
 const app = express();
+app.use(express.json());
 
-app.use(bodyParser.json());
-
-app.get('/api/messages', messagesCtrl.getAllMessages);
-app.post('/api/messages', messagesCtrl.createMessage);
+app.get("/api/messages", messagesCtrl.getAllMessages);
+app.post("/api/message", messagesCtrl.createMessage);
 
 app.listen(SERVER_PORT, () => {
   console.log(`Server listening on port ${SERVER_PORT}.`);
 });
+
 ```
 
 </details>
@@ -106,42 +145,15 @@ module.exports = {
     res.status(200).send(allMessages);
   },
   createMessage: (req, res) => {
+    const { username, message } = req.body;
     let newMessage = {
-      username: req.body.username,
-      message: req.body.message
+      username,
+      message
     };
     allMessages.push(newMessage);
     res.status(200).send(allMessages);
   }
 };
-```
-
-</details>
-
-## Step 3
-
-### Summary
-
-In this step, we will set up the proxy so that all non text/html requests are forwarded on to our node/express server.
-
-### Instructions
-
-- Open the package.json file in the project root.
-- A the following line to the file
-  - `"proxy": "http://localhost:3005"`
-
-### Solution
-
-<details>
-
-<summary> <code> package.json </code> </summary>
-
-```js
-...
-
-  "main": "./server/index.js",
-  "proxy": "http://localhost:3005"
-}
 ```
 
 </details>
@@ -162,7 +174,7 @@ In this step, we will start making HTTP requests, from our react app to our node
   - path: `'/api/messages'`
   - Set state with the response. Update the `allMessages` property on state.
 - Find the `createMessage` method and make a post request. Send `this.state.username` and `this.state.message` in the body of the request. Use `username` and `message` property names.
-  - path: `'/api/messages'`
+  - path: `'/api/message'`
   - body: `{username: this.state.username, message: this.state.message}`
 - Set state with the response (which will be the updated array messages from the server)
   - Update the `allMessages` property.
@@ -174,22 +186,26 @@ In this step, we will start making HTTP requests, from our react app to our node
 <summary> <code> App.js </code> </summary>
 
 ```js
+...
   componentDidMount() {
     axios.get('/api/messages').then(res => {
       this.setState({ allMessages: res.data });
     });
   }
 
-  // ...
-
   createMessage() {
-    let { username, message } = this.state;
     axios
-      .post('/api/messages', { username: username, message: message })
+      .post("/api/message", {
+        username: this.state.username,
+        message: this.state.message
+      })
       .then(res => {
-        this.setState({ allMessages: res.data });
+        this.setState({
+          allMessages: res.data
+        });
       });
   }
+...
 ```
 
 </details>
@@ -198,7 +214,7 @@ In this step, we will start making HTTP requests, from our react app to our node
 
 ### Summary
 
-In this step, we will set up sessions using the express-session library. By using sessions, we will be able to keep track of a message history for each user on our app.
+In this step, we will set up sessions using the `express-session` library. By using sessions, we will be able to keep track of a message history for each user on our app.
 
 At this point, you should have a working app where you can save your username and send messages.
 
@@ -206,11 +222,11 @@ At this point, you should have a working app where you can save your username an
 
 - Run `npm i express-session`;
 - This library is middleware. We need to configure sessions using the built-in express method `app.use()`;
-- At the top of the file, require in the library
+- At the top of `index.js`, require in the library
   - `const session = require('express-session');`
   - In the `.env` file, add a property called `SESSION_SECRET` with an associated value. In the `index.js` file, destructure this value from the `process.env` object.
 - Configure this top level middleware like this:
-  ```
+  ```js
   app.use(session({
     secret: SESSION_SECRET,
     resave: false,
@@ -228,17 +244,16 @@ At this point, you should have a working app where you can save your username an
 <summary> <code> index.js </code> </summary>
 
 ```js
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const messagesCtrl = require('./messagesCtrl');
-const session = require('express-session');
+require("dotenv").config();
+const express = require("express");
+const messagesCtrl = require("./messagesCtrl");
+const session = require("express-session");
 
 let { SERVER_PORT, SESSION_SECRET } = process.env;
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -247,7 +262,18 @@ app.use(
   })
 );
 
-// ...
+...
+```
+
+</details>
+
+<details>
+
+<summary><code>.env</code></summary>
+
+```
+SERVER_PORT = 3005
+SESSION_SECRET = jfdfjkdslajfdsksuperdupersecretfdjskalfjdsaweifj
 ```
 
 </details>
@@ -262,10 +288,10 @@ In this step, we will use sessions to create a message history.
 
 - In the `messagesCtrl.js` file, find the `createMessage` method. We are currently taking all messages that are sent to the server and storing them in the `allMessages` array. In addition to this, we will use the user's current session to store all the messages from the user.
 - To access session data, just use the property `req.session`. `req.session` is an object that we can use to store whatever we want. In this case, we want to add a property called `history` that will be an array.
-  - _NOTE_: Remember, we have access to the `req.session` object because we are using the express-session library.
+  - _NOTE_: Remember, we have access to the `req.session` object because we are using the `express-session` library.
 - We need to initialize the `req.session.history` property if it doesn't already exists on the `req.session` object. Then push the new message object into the `req.session.history` array.
 
-  ```
+  ```js
     if (req.session.history) {
       req.session.history.push(newMessage);
     } else {
@@ -288,9 +314,10 @@ module.exports = {
     res.status(200).send(allMessages);
   },
   createMessage: (req, res) => {
+    const { username, message } = req.body;
     let newMessage = {
-      username: req.body.username,
-      message: req.body.message
+      username,
+      message
     };
     allMessages.push(newMessage);
 
@@ -300,7 +327,6 @@ module.exports = {
       req.session.history = [];
       req.session.history.push(newMessage);
     }
-
     res.status(200).send(allMessages);
   }
 };
@@ -344,11 +370,14 @@ export default class HistoryModal extends Component {
     };
   }
   componentDidMount() {
-    axios.get('/api/messages/history').then(res => {
-      this.setState({ historyMessages: res.data });
+    axios.get("/api/messages/history").then(res => {
+      this.setState({
+        historyMessages: res.data
+      });
     });
   }
-  // ...
+
+...
 ```
 
 </details>
@@ -357,32 +386,16 @@ export default class HistoryModal extends Component {
 <summary> <code> index.js </code> </summary>
 
 ```js
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const messagesCtrl = require('./messagesCtrl');
-const session = require('express-session');
+...
 
-let { SERVER_PORT, SESSION_SECRET } = process.env;
-
-const app = express();
-
-app.use(bodyParser.json());
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-  })
-);
-
-app.get('/api/messages', messagesCtrl.getAllMessages);
-app.get('/api/messages/history', messagesCtrl.history);
-app.post('/api/messages', messagesCtrl.createMessage);
+app.get("/api/messages", messagesCtrl.getAllMessages);
+app.get("/api/messages/history", messagesCtrl.history);
+app.post("/api/message", messagesCtrl.createMessage);
 
 app.listen(SERVER_PORT, () => {
   console.log(`Server listening on port ${SERVER_PORT}.`);
 });
+
 ```
 
 </details>
@@ -391,28 +404,7 @@ app.listen(SERVER_PORT, () => {
 <summary> <code> messagesCtrl.js </code> </summary>
 
 ```js
-let allMessages = [];
-
-module.exports = {
-  getAllMessages: (req, res) => {
-    res.status(200).send(allMessages);
-  },
-  createMessage: (req, res) => {
-    let newMessage = {
-      username: req.body.username,
-      message: req.body.message
-    };
-    allMessages.push(newMessage);
-
-    if (req.session.history) {
-      req.session.history.push(newMessage);
-    } else {
-      req.session.history = [];
-      req.session.history.push(newMessage);
-    }
-
-    res.status(200).send(allMessages);
-  },
+...
   history: (req, res) => {
     res.status(200).send(req.session.history);
   }
@@ -433,7 +425,7 @@ In this step, we will add in custom middleware. Sometimes you just cannot trust 
 
   - _Note_: the example below is using a regular expression. Regular expressions are patterns used to match character combinations in strings. The regular expression below is searching for our bad words using the 'g' flag, which searches the string gloabally for all instances of our bad words...then replaces them with '\*\*\*\*'.
 
-```
+```js
 app.use((req, res, next) => {
   let badWords = ['knucklehead', 'jerk', 'internet explorer'];
   if (req.body.message) {
