@@ -5,9 +5,10 @@ module.exports = {
     res.status(200).send(allMessages);
   },
   createMessage: (req, res) => {
+    const { username, message } = req.body;
     let newMessage = {
-      username: req.body.username,
-      message: req.body.message
+      username,
+      message
     };
     allMessages.push(newMessage);
 
@@ -17,7 +18,6 @@ module.exports = {
       req.session.history = [];
       req.session.history.push(newMessage);
     }
-
     res.status(200).send(allMessages);
   },
   history: (req, res) => {
