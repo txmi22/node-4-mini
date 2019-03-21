@@ -116,9 +116,8 @@ In this step, we will set up needed endpoints and create a controller file.
 require("dotenv").config();
 const express = require("express");
 const messagesCtrl = require("./messagesCtrl");
-const session = require("express-session");
 
-let { SERVER_PORT, SESSION_SECRET } = process.env;
+let { SERVER_PORT } = process.env;
 
 const app = express();
 app.use(express.json());
