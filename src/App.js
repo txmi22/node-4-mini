@@ -20,7 +20,9 @@ class App extends Component {
     //create request here
   }
 
-  // CREATE MESSAGE METHOD
+  createMessage() {
+    //create request here
+  }
   
 
   saveUsername() {
