@@ -229,12 +229,16 @@ At this point, you should have a working app where you can save your username an
   app.use(session({
     secret: SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60
+    }
   }))
   ```
   - **secret**: The session secret will add a basic layer of security.
   - **resave**: Forces the session to be saved back to the session store, even if the session was never modified during the request (info from docs).
   - **saveUninitialized**: Forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified (info from docs).
+   - **cookie**: Allows us to customize the seesion cookie. Here we are setting the maximum age of the cookie to 1 hour (*1000* milliseconds in a second, *60* seconds in a minutes, *60* minutes in one hour)
 
 ### Solution
 
